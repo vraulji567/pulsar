@@ -2589,6 +2589,7 @@ public class PersistentTopic extends AbstractTopic implements Topic, AddEntryCal
     public CompletableFuture<Void> checkClusterMigration() {
         log.info("{} checking cluster migration", topic);
         Optional<ClusterUrl> clusterUrl = getMigratedClusterUrl();
+
         if (!clusterUrl.isPresent()) {
             log.info("{} cluster-url is not configured", topic);
             return CompletableFuture.completedFuture(null);
@@ -2616,13 +2617,13 @@ public class PersistentTopic extends AbstractTopic implements Topic, AddEntryCal
             return CompletableFuture.completedFuture(null);
         }
         log.info("{} initializing subscription created at migration cluster", topic);
-        return getMigratedClusterUrlAsync(getBrokerService().getPulsar()).thenCompose(clusterUrl -> {
+        return getMigratedClusterUrlAsync(getBrokerService().getPulsar(), topic).thenCompose(clusterUrl -> {
             if (!brokerService.getPulsar().getConfig().isClusterMigrationAutoResourceCreation()) {
                 return CompletableFuture.completedFuture(null);
             }
             if (!clusterUrl.isPresent()) {
                 return FutureUtil
-                        .failedFuture(new TopicMigratedException("cluster migration service-url is not configired"));
+                        .failedFuture(new TopicMigratedException("cluster migration service-url is not configured"));
             }
             ClusterUrl url = clusterUrl.get();
             ClusterData clusterData = ClusterData.builder().serviceUrl(url.getServiceUrl())
